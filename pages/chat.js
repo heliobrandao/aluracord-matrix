@@ -1,25 +1,56 @@
 import { Box, Text, TextField, Image, Button } from '@skynexui/components';
 import React from 'react';
 import appConfig from '../config.json';
+import { createClient } from '@supabase/supabase-js'
+
+
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTY0MzM3NzQ4MSwiZXhwIjoxOTU4OTUzNDgxfQ.GpmAwhMazJlaok12Vh7X9E7ItKjEnt6WaKrtXIU9kY8';
+const SUPABASE_URL = 'https://jphcrmcxofjnyxfqikze.supabase.co';
+const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+
 
 export default function ChatPage() {
     const [mensagem, setMensagem] = React.useState('');
-    const [listaDeMensagens, setListaMensagens] = React.useState([]);
-    // Sua lógica vai aqui
+    const [listaDeMensagens, setListaDeMensagens] = React.useState([]);
 
-    // ./Sua lógica vai aqui
+    React.useEffect(() => {
+      supabaseClient
+        .from('mensagens')
+        .select('*')
+        .order('id', {ascending: false})
+        .then(({data}) => {
+          console.log('Dados da consulta:', data);
+          setListaDeMensagens(data);
+      });
+    }, []);
 
 
     function handleNovaMensagem(novaMensagem) {
         const mensagem = {
-            id: listaDeMensagens.length + 1,
-            de: 'developer-fernanda',
+            // id: listaDeMensagens.length + 1,
+            de: 'heliobrandao',
             texto: novaMensagem,
         };
-        setListaMensagens([
-            mensagem,
-            ...listaDeMensagens,
-        ]);
+
+        supabaseClient
+          .from('mensagens')
+          .insert([
+            // deve ser um objeto com os MESMOS CAMPOS que voce escreveu no supabase
+            mensagem
+          ])
+          .then(({data}) =>{
+            console.log('Criando mensagem:', data)
+            setListaDeMensagens([
+              data[0],
+              ...listaDeMensagens,
+            ])
+          })
+
+        // setListaMensagens([
+        //     mensagem,
+        //     ...listaDeMensagens,
+        // ]);
         setMensagem('');
     }
 
